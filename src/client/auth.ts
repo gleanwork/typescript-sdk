@@ -269,13 +269,37 @@ export async function discoverOAuthMetadata(
   authorizationServerUrl: string | URL,
   opts?: { protocolVersion?: string },
 ): Promise<OAuthMetadata | undefined> {
-  const url = new URL("/.well-known/oauth-authorization-server", authorizationServerUrl);
+  let metadata = await _discoverOAuthMetadata(
+    authorizationServerUrl,
+    "/.well-known/oauth-authorization-server",
+    opts,
+  );
+
+  if (metadata === undefined) {
+    // server 404, in other cases _discoverOAuthMetadata would already have thrown
+    metadata = await _discoverOAuthMetadata(
+      authorizationServerUrl,
+      "/.well-known/openid-configuration",
+      opts,
+    );
+  }
+
+  return metadata;
+}
+
+export async function _discoverOAuthMetadata(
+  authorizationServerUrl: string | URL,
+  wellKnownMetadataPath: string,
+  opts?: { protocolVersion?: string },
+): Promise<OAuthMetadata | undefined> {
+  const url = new URL(wellKnownMetadataPath, authorizationServerUrl);
   let response: Response;
   try {
     response = await fetch(url, {
       headers: {
-        "MCP-Protocol-Version": opts?.protocolVersion ?? LATEST_PROTOCOL_VERSION
-      }
+        "MCP-Protocol-Version":
+          opts?.protocolVersion ?? LATEST_PROTOCOL_VERSION,
+      },
     });
   } catch (error) {
     // CORS errors come back as TypeError

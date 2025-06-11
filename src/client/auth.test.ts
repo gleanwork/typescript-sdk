@@ -239,6 +239,37 @@ describe("OAuth Authorization", () => {
       expect(mockFetch.mock.calls[0][1]?.headers).toHaveProperty("MCP-Protocol-Version");
     });
 
+    it("returns metadata when discovery succeeds at the fallback endpoint", async () => {
+      // First call to oauth-authorization-server returns 404
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+      });
+
+      // Second call to openid-configuration succeeds
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => validMetadata,
+      });
+
+      const metadata = await discoverOAuthMetadata("https://auth.example.com");
+      expect(metadata).toEqual(validMetadata);
+
+      // Verify both calls were made
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+
+      // Verify first call was to oauth-authorization-server
+      expect(mockFetch.mock.calls[0][0].toString()).toBe(
+        "https://auth.example.com/.well-known/oauth-authorization-server"
+      );
+
+      // Verify second call was to openid-configuration
+      expect(mockFetch.mock.calls[1][0].toString()).toBe(
+        "https://auth.example.com/.well-known/openid-configuration"
+      );
+    });
+
     it("throws an error when all fetch attempts fail", async () => {
       // Set up a counter to control behavior
       let callCount = 0;
@@ -264,7 +295,14 @@ describe("OAuth Authorization", () => {
       expect(mockFetch).toHaveBeenCalledTimes(2);
     });
 
-    it("returns undefined when discovery endpoint returns 404", async () => {
+    it("returns undefined when discovery endpoints return 404", async () => {
+      // request to /.well-known/oauth-authorization-server
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+      });
+
+      // request to /.well-known/openid-configuration
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
