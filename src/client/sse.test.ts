@@ -551,7 +551,10 @@ describe("SSEClientTransport", () => {
       authServer.close();
 
       authServer = createServer((req, res) => {
-        if (req.url === "/.well-known/oauth-authorization-server") {
+        if (
+          req.url === "/.well-known/oauth-authorization-server" ||
+          req.url === "/.well-known/openid-configuration"
+        ) {
           res.writeHead(404).end();
           return;
         }
@@ -673,7 +676,10 @@ describe("SSEClientTransport", () => {
       authServer.close();
 
       authServer = createServer((req, res) => {
-        if (req.url === "/.well-known/oauth-authorization-server") {
+        if (
+          req.url === "/.well-known/oauth-authorization-server" ||
+          req.url === "/.well-known/openid-configuration"
+        ) {
           res.writeHead(404).end();
           return;
         }
@@ -818,7 +824,10 @@ describe("SSEClientTransport", () => {
       authServer.close();
 
       authServer = createServer((req, res) => {
-        if (req.url === "/.well-known/oauth-authorization-server") {
+        if (
+          req.url === "/.well-known/oauth-authorization-server" ||
+          req.url === "/.well-known/openid-configuration"
+        ) {
           res.writeHead(404).end();
           return;
         }
