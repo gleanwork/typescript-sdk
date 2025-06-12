@@ -1,0 +1,27 @@
+# Publish the fork to pkg.pr.new so we can depend on it & bundle it without
+# publishing to the npm registry.
+#
+# The whole fork can be removed once
+# https://github.com/modelcontextprotocol/typescript-sdk/issues/616 is resolved
+name: Publish to pkg.pr.new
+on:
+  push:
+    branches:
+      - patches
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm run lint
+      - run: npx pkg-pr-new publish --compact --bin
