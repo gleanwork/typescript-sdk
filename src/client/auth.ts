@@ -276,10 +276,14 @@ export async function discoverOAuthMetadata(
   );
 
   if (metadata === undefined) {
+    let authorizationServerUrlStr = authorizationServerUrl.toString();
+    if (!authorizationServerUrlStr.endsWith("/")) {
+      authorizationServerUrlStr = `${authorizationServerUrlStr}/`;
+    }
     // server 404, in other cases _discoverOAuthMetadata would already have thrown
     metadata = await _discoverOAuthMetadata(
-      authorizationServerUrl,
-      "/.well-known/openid-configuration",
+      authorizationServerUrlStr,
+      ".well-known/openid-configuration",
       opts,
     );
   }
